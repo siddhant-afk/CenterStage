@@ -1,0 +1,6 @@
+spring:
+  application:
+    name: streaming-service
+  profiles:
+    active: local
+
