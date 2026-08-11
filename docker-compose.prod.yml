@@ -84,8 +84,19 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/content_db
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_SHOW_SQL: "true"
 
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      SPRING_KAFKA_CONSUMER_GROUP_ID: content-service-group
+      SPRING_KAFKA_CONSUMER_AUTO_OFFSET_RESET: earliest
+      SPRING_KAFKA_CONSUMER_KEY_DESERIALIZER: org.apache.kafka.common.serialization.StringDeserializer
+      SPRING_KAFKA_CONSUMER_VALUE_DESERIALIZER: org.springframework.kafka.support.serializer.JsonDeserializer
+
+      SPRING_KAFKA_CONSUMER_PROPERTIES_SPRING_JSON_TRUSTED_PACKAGES: "*"
+      SPRING_KAFKA_CONSUMER_PROPERTIES_SPRING_JSON_USE_TYPE_HEADERS: "false"
+      SPRING_KAFKA_CONSUMER_PROPERTIES_SPRING_JSON_VALUE_DEFAULT_TYPE: java.util.HashMap
+     
 
       SERVER_PORT: 8081
 
@@ -106,6 +117,8 @@ services:
       - kafka
     environment:
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      SPRING_SERVLET_MULTIPART_MAX_FILE_SIZE: 2GB
+      SPRING_SERVLET_MULTIPART_MAX_REQUEST_SIZE: 2GB
 
       SERVER_PORT: 8082
 
@@ -129,14 +142,24 @@ services:
       - kafka
     environment:
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      SPRING_KAFKA_CONSUMER_GROUP_ID: encoding-service-group
+      SPRING_KAFKA_CONSUMER_AUTO_OFFSET_RESET: earliest
+      SPRING_KAFKA_CONSUMER_KEY_DESERIALIZER: org.apache.kafka.common.serialization.StringDeserializer
+      SPRING_KAFKA_CONSUMER_VALUE_DESERIALIZER: org.springframework.kafka.support.serializer.JsonDeserializer
 
+      SPRING_KAFKA_CONSUMER_PROPERTIES_SPRING_JSON_TRUSTED_PACKAGES: "*"
+      SPRING_KAFKA_CONSUMER_PROPERTIES_SPRING_JSON_USE_TYPE_HEADERS: "false"
+      SPRING_KAFKA_CONSUMER_PROPERTIES_SPRING_JSON_VALUE_DEFAULT_TYPE: com.example.encodingservice.event.VideoUploadedEvent
+
+      SPRING_KAFKA_PRODUCER_KEY_SERIALIZER: org.apache.kafka.common.serialization.StringSerializer
+      SPRING_KAFKA_PRODUCER_VALUE_SERIALIZER: org.springframework.kafka.support.serializer.JsonSerializer
       SERVER_PORT: 8083
 
       AWS_REGION: us-west-1
       AWS_S3_BUCKET_NAME: video-streaming-platform-281414431617-us-west-1-an
 
       FFMPEG_PATH: /usr/bin/ffmpeg
-      TEMP_DIR: /tmp/encoding
+      ENCODING_BASE_PATH: /tmp/encoding
 
     networks:
       - centerstage-network
@@ -156,6 +179,14 @@ services:
       - redis
     environment:
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      SPRING_KAFKA_CONSUMER_GROUP_ID: streaming-service-group
+      SPRING_KAFKA_CONSUMER_AUTO_OFFSET_RESET: earliest
+      SPRING_KAFKA_CONSUMER_KEY_DESERIALIZER: org.apache.kafka.common.serialization.StringDeserializer
+      SPRING_KAFKA_CONSUMER_VALUE_DESERIALIZER: org.springframework.kafka.support.serializer.JsonDeserializer
+
+      SPRING_KAFKA_CONSUMER_PROPERTIES_SPRING_JSON_TRUSTED_PACKAGES: "*"
+      SPRING_KAFKA_CONSUMER_PROPERTIES_SPRING_JSON_USE_TYPE_HEADERS: "false"
+      SPRING_KAFKA_CONSUMER_PROPERTIES_SPRING_JSON_VALUE_DEFAULT_TYPE: com.example.streamingservice.event.VideoEncodedEvent
 
       SPRING_DATA_REDIS_HOST: redis
       SPRING_DATA_REDIS_PORT: 6379
