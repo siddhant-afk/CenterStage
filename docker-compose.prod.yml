@@ -80,10 +80,13 @@ services:
     depends_on:
       - postgres
       - kafka
+    ports:
+      - "8081:8081"
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/content_db
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_JPA_SHOW_SQL: "true"
 
@@ -96,7 +99,6 @@ services:
       SPRING_KAFKA_CONSUMER_PROPERTIES_SPRING_JSON_TRUSTED_PACKAGES: "*"
       SPRING_KAFKA_CONSUMER_PROPERTIES_SPRING_JSON_USE_TYPE_HEADERS: "false"
       SPRING_KAFKA_CONSUMER_PROPERTIES_SPRING_JSON_VALUE_DEFAULT_TYPE: java.util.HashMap
-     
 
       SERVER_PORT: 8081
 
@@ -115,8 +117,11 @@ services:
     restart: unless-stopped
     depends_on:
       - kafka
+    ports:
+      - "8082:8082"
     environment:
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+
       SPRING_SERVLET_MULTIPART_MAX_FILE_SIZE: 2GB
       SPRING_SERVLET_MULTIPART_MAX_REQUEST_SIZE: 2GB
 
@@ -142,6 +147,7 @@ services:
       - kafka
     environment:
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+
       SPRING_KAFKA_CONSUMER_GROUP_ID: encoding-service-group
       SPRING_KAFKA_CONSUMER_AUTO_OFFSET_RESET: earliest
       SPRING_KAFKA_CONSUMER_KEY_DESERIALIZER: org.apache.kafka.common.serialization.StringDeserializer
@@ -153,6 +159,7 @@ services:
 
       SPRING_KAFKA_PRODUCER_KEY_SERIALIZER: org.apache.kafka.common.serialization.StringSerializer
       SPRING_KAFKA_PRODUCER_VALUE_SERIALIZER: org.springframework.kafka.support.serializer.JsonSerializer
+
       SERVER_PORT: 8083
 
       AWS_REGION: us-west-1
@@ -177,6 +184,8 @@ services:
     depends_on:
       - kafka
       - redis
+    ports:
+      - "8084:8084"
     environment:
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
       SPRING_KAFKA_CONSUMER_GROUP_ID: streaming-service-group
