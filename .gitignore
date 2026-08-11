@@ -1,3 +1,5 @@
 
 # Application properties files
 **/src/main/resources/application-local.yml
+
+.env.prod

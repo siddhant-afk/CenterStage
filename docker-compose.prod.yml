@@ -1,0 +1,186 @@
+services:
+
+  # =========================================
+  # POSTGRESQL
+  # =========================================
+
+  postgres:
+    image: postgres:16
+    container_name: centerstage-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: content_db
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - centerstage-network
+
+  # =========================================
+  # REDIS
+  # =========================================
+
+  redis:
+    image: redis:latest
+    container_name: centerstage-redis
+    restart: unless-stopped
+    networks:
+      - centerstage-network
+
+  # =========================================
+  # ZOOKEEPER
+  # =========================================
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.4.0
+    container_name: centerstage-zookeeper
+    restart: unless-stopped
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    networks:
+      - centerstage-network
+
+  # =========================================
+  # KAFKA
+  # =========================================
+
+  kafka:
+    image: confluentinc/cp-kafka:7.4.0
+    container_name: centerstage-kafka
+    restart: unless-stopped
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:29092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+
+    networks:
+      - centerstage-network
+
+  # =========================================
+  # CONTENT SERVICE
+  # =========================================
+
+  content-service:
+    build:
+      context: ./content-service
+      dockerfile: Dockerfile
+    container_name: centerstage-content-service
+    restart: unless-stopped
+    depends_on:
+      - postgres
+      - kafka
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/content_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+
+      SERVER_PORT: 8081
+
+    networks:
+      - centerstage-network
+
+  # =========================================
+  # VIDEO SERVICE
+  # =========================================
+
+  video-service:
+    build:
+      context: ./video-service
+      dockerfile: Dockerfile
+    container_name: centerstage-video-service
+    restart: unless-stopped
+    depends_on:
+      - kafka
+    environment:
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+
+      SERVER_PORT: 8082
+
+      AWS_REGION: us-west-1
+      AWS_S3_BUCKET_NAME: video-streaming-platform-281414431617-us-west-1-an
+
+    networks:
+      - centerstage-network
+
+  # =========================================
+  # ENCODING SERVICE
+  # =========================================
+
+  encoding-service:
+    build:
+      context: ./encoding-service
+      dockerfile: Dockerfile
+    container_name: centerstage-encoding-service
+    restart: unless-stopped
+    depends_on:
+      - kafka
+    environment:
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+
+      SERVER_PORT: 8083
+
+      AWS_REGION: us-west-1
+      AWS_S3_BUCKET_NAME: video-streaming-platform-281414431617-us-west-1-an
+
+      FFMPEG_PATH: /usr/bin/ffmpeg
+      TEMP_DIR: /tmp/encoding
+
+    networks:
+      - centerstage-network
+
+  # =========================================
+  # STREAMING SERVICE
+  # =========================================
+
+  streaming-service:
+    build:
+      context: ./streaming-service
+      dockerfile: Dockerfile
+    container_name: centerstage-streaming-service
+    restart: unless-stopped
+    depends_on:
+      - kafka
+      - redis
+    environment:
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+
+      SERVER_PORT: 8084
+
+      AWS_REGION: us-west-1
+      AWS_S3_BUCKET_NAME: video-streaming-platform-281414431617-us-west-1-an
+
+      AWS_S3_PRESIGNED_URL_EXPIRY: 60
+
+    networks:
+      - centerstage-network
+
+# =========================================
+# VOLUMES
+# =========================================
+
+volumes:
+  postgres-data:
+
+# =========================================
+# NETWORK
+# =========================================
+
+networks:
+  centerstage-network:
+    driver: bridge
