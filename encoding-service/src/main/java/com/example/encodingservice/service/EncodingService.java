@@ -79,7 +79,7 @@ public class EncodingService {
             Files.createDirectories(Paths.get(jobPath + "/encoded"));
 
             // Step 1 : Download raw video from S3
-            String localVideoPath = jobPath + "raw_video.mp4";
+            String localVideoPath = jobPath + "/raw_video.mp4";
             downloadFromS3(event.getVideoKey(),localVideoPath);
             log.info("Raw video downloaded to : {}",localVideoPath);
 
@@ -90,7 +90,7 @@ public class EncodingService {
                 int bitrate = qualities[1];
                 int height = qualities[2];
 
-                String qualityDir = jobPath + "/encoded" + height + "p";
+                String qualityDir = jobPath + "/encoded/" + height + "p";
                 Files.createDirectories(Paths.get(qualityDir));
 
                 encodeToHls(localVideoPath, qualityDir,width,height,bitrate);
@@ -194,6 +194,7 @@ public class EncodingService {
 
         ProcessBuilder processBuilder = new ProcessBuilder(command);
         processBuilder.redirectErrorStream(true);
+        processBuilder.inheritIO();
         Process process = processBuilder.start();
         int exitCode = process.waitFor();
 
@@ -212,7 +213,7 @@ public class EncodingService {
 
         StringBuilder master = new StringBuilder();
         master.append("#EXTM3U\n");
-        master.append("EXT-X-VERSION:3\n\n");
+        master.append("#EXT-X-VERSION:3\n\n");
 
         int[][] qualitites = {{1920,5000,1080},{1280,2800,720},
                 {854,1200,480},{640,800,360}

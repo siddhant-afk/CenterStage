@@ -5,6 +5,7 @@ services:
   # ─────────────────────────────────────────
   # REDIS — Streaming URL Cache
   # ─────────────────────────────────────────
+
   redis:
     image: redis:latest
     container_name: redis-netflix
@@ -14,24 +15,27 @@ services:
       - netflix-network
 
   # ─────────────────────────────────────────
-  # MYSQL — Movie Catalog Storage
+  # POSTGRESQL — Movie Catalog Storage
   # ─────────────────────────────────────────
-  mysql:
-    image: mysql:8.0
-    container_name: mysql-netflix
+
+  postgres:
+    image: postgres:16
+    container_name: postgres-netflix
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: content_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: content_db
     ports:
-      - "3306:3306"
+      - "5432:5432"
     volumes:
-      - mysql-data:/var/lib/mysql
+      - postgres-data:/var/lib/postgresql/data
     networks:
       - netflix-network
 
   # ─────────────────────────────────────────
   # ZOOKEEPER — Required by Kafka
   # ─────────────────────────────────────────
+
   zookeeper:
     image: confluentinc/cp-zookeeper:7.4.0
     container_name: zookeeper
@@ -44,6 +48,7 @@ services:
   # ─────────────────────────────────────────
   # KAFKA — Event Streaming
   # ─────────────────────────────────────────
+
   kafka:
     image: confluentinc/cp-kafka:7.4.0
     container_name: kafka
@@ -63,7 +68,7 @@ services:
       - netflix-network
 
 volumes:
-  mysql-data:
+  postgres-data:
 
 networks:
   netflix-network:
