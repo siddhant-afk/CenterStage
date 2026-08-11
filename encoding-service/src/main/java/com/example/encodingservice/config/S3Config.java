@@ -1,6 +1,7 @@
 package com.example.encodingservice.config;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
@@ -19,6 +20,7 @@ public class S3Config {
     @Value("${aws.region}")
     private String region;
 
+    @Bean
     public S3Client s3Client(){
 
         return S3Client.builder()
