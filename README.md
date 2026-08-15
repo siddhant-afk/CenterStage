@@ -1,6 +1,6 @@
 # CenterStage
 
-A microservices-based video streaming platform (Netflix-style) built with Spring Boot, Kafka, FFmpeg, AWS S3, PostgreSQL, and Redis. It handles the full lifecycle of a video — catalog metadata, upload, adaptive-bitrate encoding, and HLS playback via presigned URLs.
+A microservices-based video streaming platform built with Spring Boot, Kafka, FFmpeg, AWS S3, PostgreSQL, and Redis. It handles the full lifecycle of a video — catalog metadata, upload, adaptive-bitrate encoding, and HLS playback via presigned URLs.
 
 ## Architecture
 
