@@ -6,7 +6,7 @@ A microservices-based video streaming platform (Netflix-style) built with Spring
 
 Requests come in through an **API Gateway**, which routes to three core services. Video processing is decoupled via **Kafka** so uploads don't block on encoding.
 
-![High-level design diagram of CenterStage](./docs/hld.svg)
+![High-level design diagram of CenterStage](./hld.svg)
 
 **Flow:**
 1. `content-service` registers a movie's metadata (title, genre, cast, etc.) in PostgreSQL.
